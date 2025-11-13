@@ -13,3 +13,6 @@ __pycache__/
 
 # Virtual environment
 venv/
+
+# Ignore SQLite database
+time_tracking.db
