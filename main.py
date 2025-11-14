@@ -32,6 +32,16 @@ class ShiftCreate(BaseModel):
     start_time: datetime
     end_time: datetime
 
+class ShiftUpdate(BaseModel):
+    employee_id: int | None = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+
+
+class EmployeeUpdate(BaseModel):
+    name: str | None = None
+    role: str | None = None
+
 # CRUD for employees
 @app.post("/employees/")
 def create_employee(employee: EmployeeCreate, db: Session = Depends(get_db)):
@@ -41,10 +51,39 @@ def create_employee(employee: EmployeeCreate, db: Session = Depends(get_db)):
     db.refresh(db_employee)
     return db_employee
 
+@app.get("/employees/{employee_id}")
+def get_employee(employee_id: int, db: Session = Depends(get_db)):
+    return db.query(Employee).filter(Employee.id == employee_id).first()
+
+@app.delete("/employees/{employee_id}", status_code=204)
+def delete_employee(employee_id: int, db: Session = Depends(get_db)):
+    employee = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+
+    db.delete(employee)
+    db.commit()
+    return
+@app.put("/employees/{employee_id}", status_code=200)
+def update_employee(employee_id: int, payload: EmployeeUpdate, db: Session = Depends(get_db)):
+    employee = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+
+    # update only provided fields
+    if payload.name is not None:
+        employee.name = payload.name
+    if payload.role is not None:
+        employee.role = payload.role
+
+    db.commit()
+    db.refresh(employee)
+    return employee
 @app.get("/employees/")
 def list_employees(db: Session = Depends(get_db)):
     return db.query(Employee).all()
 
+#----------------------------------------------------------------------------#
 # CRUD for shifts
 @app.post("/shifts/")
 def create_shift(shift: ShiftCreate, db: Session = Depends(get_db)):
@@ -69,4 +108,41 @@ def create_shift(shift: ShiftCreate, db: Session = Depends(get_db)):
     db.refresh(db_shift)
     return db_shift
 
-#TODO add delete and update endpoints
+@app.delete("/shifts/{shift_id}", status_code=204)
+def delete_shift(shift_id: int, db: Session = Depends(get_db)):
+    shift = db.query(WorkShift).filter(WorkShift.id == shift_id).first()
+    if not shift:
+        raise HTTPException(status_code=404, detail="Shift not found")
+
+    db.delete(shift)
+    db.commit()
+    return
+
+@app.delete("/employees/{employee_id}/shifts", status_code=204)
+def delete_all_shifts(employee_id: int, db: Session = Depends(get_db)):
+    shifts = db.query(WorkShift).filter(WorkShift.employee_id == employee_id).all()
+    if not shifts:
+        raise HTTPException(status_code=404, detail="No shifts found for this employee")
+
+    for s in shifts:
+        db.delete(s)
+
+    db.commit()
+    return
+@app.put("/shifts/{shift_id}", status_code=200)
+def update_shift(shift_id: int, payload: ShiftUpdate, db: Session = Depends(get_db)):
+    shift = db.query(WorkShift).filter(WorkShift.id == shift_id).first()
+    if not shift:
+        raise HTTPException(status_code=404, detail="Shift not found")
+
+    # Update only provided fields
+    if payload.employee_id is not None:
+        shift.employee_id = payload.employee_id
+    if payload.start_time is not None:
+        shift.start_time = payload.start_time
+    if payload.end_time is not None:
+        shift.end_time = payload.end_time
+
+    db.commit()
+    db.refresh(shift)
+    return shift
