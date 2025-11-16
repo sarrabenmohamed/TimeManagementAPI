@@ -6,7 +6,7 @@ from database import Base
 
 class Employee(Base):
     __tablename__ = "employees"
-    id = Column(Integer, primary_key=True, index=True)  # <-- integer primary key
+    id = Column(Integer, primary_key=True, index=True)  #Todo: change into UUID
     name = Column(String, index=True)
     role = Column(String, nullable=True)
     shifts = relationship("WorkShift", back_populates="employee", cascade="all, delete-orphan")

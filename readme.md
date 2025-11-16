@@ -4,15 +4,6 @@ A simple employee time tracking system with FastAPI backend and React frontend. 
 
 ---
 
-## Features
-
-- CRUD for Employees
-- Add Shifts for Employees
-- Validations for shift overlaps (backend)
-- Interactive React UI to add employees and shifts
-
----
-
 ## Tech Stack
 
 - **Backend:** Python, FastAPI, SQLAlchemy, SQLite
@@ -35,7 +26,7 @@ venv\Scripts\activate     # Windows
 2. Install dependencies:
 
 ```bash
-pip install fastapi uvicorn sqlalchemy pydantic
+pip install fastapi uvicorn sqlalchemy pydantic pytest
 ```
 
 3. Run the backend server:
@@ -46,36 +37,10 @@ uvicorn main:app --reload
 
 The API will run at `http://localhost:8000`
 
----
-
-### Frontend
-
-1. Make sure Node.js and npm are installed:
-
-```bash
-node -v
-npm -v
+Visit **Swagger UI** for interactive API docs:  
 ```
-
-2. Navigate to the frontend directory:
-
-```bash
-cd time-tracking-ui
+http://127.0.0.1:8000/docs
 ```
-
-3. Install dependencies:
-
-```bash
-npm install
-```
-
-4. Start the frontend server:
-
-```bash
-npm run dev
-```
-
-The React app will run at `http://localhost:5173`
 
 ---
 
@@ -83,19 +48,172 @@ The React app will run at `http://localhost:5173`
 
 ### Employees
 
-- `GET /employees/` - List all employees
-- `POST /employees/` - Create a new employee
-- `GET /employees/{id}` - Get employee by ID
-- `PUT /employees/{id}` - Update employee
-- `DELETE /employees/{id}` - Delete employee
+| Method | Endpoint | Description |
+|--------|---------|-------------|
+| GET | `/employees/` | List all employees |
+| POST | `/employees/` | Create a new employee |
+| GET | `/employees/{employee_id}` | Get an employee by ID |
+| PUT | `/employees/{employee_id}` | Update an employee |
+| DELETE | `/employees/{employee_id}` | Delete an employee |
+
+---
 
 ### Shifts
 
-- `GET /shifts/` - List all shifts
-- `POST /shifts/` - Create a new shift for an employee
-- `DELETE /shifts/{id}` - Delete a shift
+| Method | Endpoint                | Description |
+|--------|-------------------------|-------------|
+| POST | `/shifts/`              | Create a new shift for an employee |
+| GET | `/shifts/{employee_id}` | List all shifts, filtered by `employee_id` |
+| PUT | `/shifts/{shift_id}`    | Update a shift |
+| DELETE | `/shifts/{shift_id}`    | Delete a shift |
 
 ---
+
+## Example Requests
+
+### 1. Create Employee
+
+```bash
+POST /employees/
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "role": "Baker"
+}
+```
+
+Response:
+
+```json
+{
+  "id": 1,
+  "name": "John Doe",
+  "role": "Baker"
+}
+```
+
+---
+
+### 2. List Employees
+
+```bash
+GET /employees/
+```
+
+Response:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "role": "Baker"
+  }
+]
+```
+
+---
+
+### 3. Create Shift
+
+```bash
+POST /shifts/
+Content-Type: application/json
+
+{
+  "employee_id": 1,
+  "start_time": "2025-11-17T08:00:00",
+  "end_time": "2025-11-17T12:00:00",
+  "shift_name": "Morning"
+}
+```
+
+Response:
+
+```json
+{
+  "id": 1,
+  "employee_id": 1,
+  "employee_name": "John Doe",
+  "start_time": "2025-11-17T08:00:00",
+  "end_time": "2025-11-17T12:00:00",
+  "shift_name": "Morning"
+}
+```
+
+---
+
+### 4. List Shifts for an Employee
+
+```bash
+GET /shifts/?employee_id=1
+```
+
+Response:
+
+```json
+[
+  {
+    "id": 1,
+    "employee_id": 1,
+    "employee_name": "John Doe",
+    "start_time": "2025-11-17T08:00:00",
+    "end_time": "2025-11-17T12:00:00",
+    "shift_name": "Morning"
+  }
+]
+```
+
+---
+
+### 5. Update Shift
+
+```bash
+PUT /shifts/1
+Content-Type: application/json
+
+{
+  "end_time": "2025-11-17T13:00:00"
+}
+```
+
+Response:
+
+```json
+{
+  "id": 1,
+  "employee_id": 1,
+  "employee_name": "John Doe",
+  "start_time": "2025-11-17T08:00:00",
+  "end_time": "2025-11-17T13:00:00",
+  "shift_name": "Morning"
+}
+```
+
+---
+
+### 6. Delete Shift
+
+```bash
+DELETE /shifts/1
+```
+
+Response: **204 No Content**
+
+---
+
+## Testing
+
+Run all tests:
+
+```bash
+pytest -q
+```
+
+
+---
+
 
 ## Notes
 
